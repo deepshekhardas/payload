@@ -23,6 +23,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.1s linear;
+
+      &:hover,
+      &:focus-visible {
+        color: var(--theme-elevation-600);
+      }
     }
 
     @include small-break {

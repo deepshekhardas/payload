@@ -2,6 +2,7 @@ import type { TypeWithID } from '../collections/config/types.js'
 import type { PaginatedDocs } from '../database/types.js'
 import type { JsonObject, PayloadRequest } from '../types/index.js'
 
+import { extractID } from './extractID.js'
 import { Locked } from '../errors/index.js'
 import { lockedDocumentsCollectionSlug } from '../locked-documents/config.js'
 
@@ -84,11 +85,11 @@ export const checkDocumentLockStatus = async ({
         typeof lockDocumentsProp === 'object' ? lockDocumentsProp.duration : lockDurationDefault
 
       const lockDurationInMilliseconds = lockDuration * 1000
-      const currentUserId = req.user?.id
+      const currentUserId = extractID(req.user)
 
       // document is locked by another user and the lock hasn't expired
       if (
-        lockedDoc.user?.value !== currentUserId &&
+        extractID(lockedDoc.user?.value) !== currentUserId &&
         now - lastEditedAt <= lockDurationInMilliseconds
       ) {
         throw new Locked(finalLockErrorMessage)

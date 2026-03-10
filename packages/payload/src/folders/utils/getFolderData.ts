@@ -85,11 +85,27 @@ export const getFolderData = async ({
       req,
       where: folderWhere,
     })
-    const [breadcrumbs, subfolders] = await Promise.all([breadcrumbsPromise, subfoldersPromise])
+
+    const documentsPromises = payload.config.collections
+      .filter((collection) => collection.slug !== payload.config.folders.slug && collection.admin.group !== 'Admin')
+      .map((collection) =>
+        getOrphanedDocs({
+          collectionSlug: collection.slug,
+          folderFieldName: payload.config.folders.fieldName,
+          req,
+          where: documentWhere,
+        }),
+      )
+
+    const [breadcrumbs, subfolders, ...documentsResults] = await Promise.all([
+      breadcrumbsPromise,
+      subfoldersPromise,
+      ...documentsPromises,
+    ])
 
     return {
       breadcrumbs,
-      documents: [],
+      documents: sortDocs({ docs: documentsResults.flat(), sort }),
       folderAssignedCollections: collectionSlug ? [collectionSlug] : undefined,
       subfolders: sortDocs({ docs: subfolders, sort }),
     }

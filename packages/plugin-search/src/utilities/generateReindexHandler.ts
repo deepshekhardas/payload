@@ -152,13 +152,33 @@ export const generateReindexHandler =
           // Loop through all locales and check each one
           let firstAllowedLocale = true
           for (const localeToSync of allLocales) {
+            // Fetch the document in this specific locale so we get the correct localized data
+            let localizedDoc = doc
+            if (localeToSync && req.payload.config.localization) {
+              try {
+                localizedDoc = await payload.findByID({
+                  id: doc.id,
+                  collection,
+                  depth: 0,
+                  locale: localeToSync,
+                  ...defaultLocalApiProps,
+                })
+              } catch (err) {
+                req.payload.logger.error({
+                  err,
+                  msg: `Search plugin: Error fetching document ${doc.id} in locale ${localeToSync}.`,
+                })
+                continue
+              }
+            }
+
             // Check if we should skip this locale for this document
             let shouldSkip = false
             if (typeof pluginConfig.skipSync === 'function') {
               try {
                 shouldSkip = await pluginConfig.skipSync({
                   collectionSlug: collection,
-                  doc,
+                  doc: localizedDoc,
                   locale: localeToSync,
                   req,
                 })
@@ -180,8 +200,8 @@ export const generateReindexHandler =
 
             await syncDocAsSearchIndex({
               collection,
-              data: doc,
-              doc,
+              data: localizedDoc,
+              doc: localizedDoc,
               locale: localeToSync,
               onSyncError: () => operation === 'create' && aggregateErrors++,
               operation,
