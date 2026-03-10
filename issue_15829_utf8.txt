@@ -1,0 +1,77 @@
+﻿### Describe the Bug
+
+I recently implemented the [filterOptions](https://payloadcms.com/docs/fields/blocks#conditional-blocks) prop for a blocks field.
+
+- the Add Content button at the end of the blocks already in the page  launches the add blocks modal and correctly filters the available blocks
+
+- the Add Below selection available on each block already in the page  launches the add blocks modal and allows all blocks without applying the filter
+
+### Link to the code that reproduces this issue
+
+https://github.com/tschwartz/payload-cms
+
+### Reproduction Steps
+
+After cloning, installing and running dev.  Observe that the last bullet of each is the difference between Expected and Observed.
+
+## Expected
+
+1. Navigate to the admin panel: http://localhost:3000/admin
+2. Add a page from the pages collection
+3. Observe that the page has the default template selected
+4. Click on Add content button
+5. Observe there is only the ability to add RichText when the page has the default template selected
+6. Click on RichText block
+7. Observe that there is now a RichText block in the page content
+8. Click on the triple dot of the RichText block
+9. Click on the Add Below option
+10. Observe there is only the ability to add RichText when the page has the default template selected
+
+## Observed
+
+1. Navigate to the admin panel: http://localhost:3000/admin
+2. Add a page from the pages collection
+3. Observe that the page has the default template selected
+4. Click on Add content button
+5. Observe there is only the ability to add RichText when the page has the default template selected
+6. Click on RichText block
+7. Observe that there is now a RichText block in the page content
+8. Click on the triple dot of the RichText block
+9. Click on the Add Below option
+10. Observe there is the ability to add RichText and Alert even when the page has the default template selected
+
+### Which area(s) are affected?
+
+area: ui
+
+### Environment Info
+
+```text
+This project is configured to use pnpm because /Users/tschwartz/dev/ea/tschwartz/payload-cms/package.json has a "packageManager" field
+
+Binaries:
+  Node: 20.19.5
+  npm: 11.6.4
+  Yarn: N/A
+  pnpm: 10.2.1
+Relevant Packages:
+  payload: 3.78.0
+  next: 15.5.12
+  @payloadcms/db-sqlite: 3.78.0
+  @payloadcms/drizzle: 3.78.0
+  @payloadcms/graphql: 3.78.0
+  @payloadcms/live-preview: 3.78.0
+  @payloadcms/live-preview-react: 3.78.0
+  @payloadcms/next/utilities: 3.78.0
+  @payloadcms/richtext-lexical: 3.78.0
+  @payloadcms/translations: 3.78.0
+  @payloadcms/ui/shared: 3.78.0
+  react: 19.2.4
+  react-dom: 19.2.4
+Operating System:
+  Platform: darwin
+  Arch: arm64
+  Version: Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:05 PST 2026; root:xnu-12377.81.4~5/RELEASE_ARM64_T6020
+  Available memory (MB): 65536
+  Available CPU cores: 12
+```

@@ -320,27 +320,34 @@ export function FolderProvider({
   }, [selectedItemKeys, getItem])
 
   const navigateAfterSelection = React.useCallback(
-    ({ collectionSlug, docID }: { collectionSlug: string; docID?: number | string }) => {
+    ({
+      collectionSlug,
+      docID,
+      newTab = false,
+    }: {
+      collectionSlug: string
+      docID?: number | string
+      newTab?: boolean
+    }) => {
+      const url =
+        collectionSlug === folderCollectionSlug
+          ? getFolderRoute(docID)
+          : formatAdminURL({
+              adminRoute: config.routes.admin,
+              path: `/collections/${collectionSlug}/${docID}`,
+            })
+
+      if (newTab) {
+        window.open(url, '_blank')
+        return
+      }
+
       if (drawerDepth === 1) {
         // not in a drawer (default is 1)
-        if (collectionSlug === folderCollectionSlug) {
-          // clicked on folder, take the user to the folder view
-          startRouteTransition(() => {
-            router.push(getFolderRoute(docID))
-            clearSelections()
-          })
-        } else if (collectionSlug) {
-          // clicked on document, take the user to the documet view
-          startRouteTransition(() => {
-            router.push(
-              formatAdminURL({
-                adminRoute: config.routes.admin,
-                path: `/collections/${collectionSlug}/${docID}`,
-              }),
-            )
-            clearSelections()
-          })
-        }
+        startRouteTransition(() => {
+          router.push(url)
+          clearSelections()
+        })
       } else {
         clearSelections()
       }
@@ -508,6 +515,7 @@ export function FolderProvider({
             navigateAfterSelection({
               collectionSlug: currentItem.relationTo,
               docID: extractID(currentItem.value),
+              newTab: isCtrlPressed || isShiftPressed,
             })
             return
           }
@@ -637,6 +645,15 @@ export function FolderProvider({
         doubleClicked =
           now - lastClickTime.current < 400 && dragOverlayItem?.itemKey === clickedItem.itemKey
         lastClickTime.current = now
+
+        if (isCtrlPressed || isShiftPressed) {
+          navigateAfterSelection({
+            collectionSlug: clickedItem.relationTo,
+            docID: extractID(clickedItem.value),
+            newTab: true,
+          })
+        }
+
         if (!doubleClicked) {
           updateSelections({
             indexes: isCurrentlySelected && selectedItemKeys.size === 1 ? [] : [currentItemIndex],
@@ -649,6 +666,7 @@ export function FolderProvider({
         navigateAfterSelection({
           collectionSlug: clickedItem.relationTo,
           docID: extractID(clickedItem.value),
+          newTab: isCtrlPressed || isShiftPressed,
         })
       }
     },

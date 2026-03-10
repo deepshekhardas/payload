@@ -1,0 +1,25 @@
+﻿### Describe the Bug.
+
+Holding shift or cmd and clicking (or double clicking) should open links in a seperate tab. This seems to currently not be implemented for neither lists nor folder cards.
+
+### Reproduction Steps
+
+1. Click a list entry or a folder card while holding shift or cmd
+
+### Environment Info
+
+```text
+Binaries:
+  Node: 22.21.1
+  npm: 10.9.4
+  Yarn: 1.22.19
+  pnpm: 10.27.0
+Relevant Packages:
+  payload: 3.77.0
+Operating System:
+  Platform: darwin
+  Arch: arm64
+  Version: Darwin Kernel Version 24.6.0: Wed Nov  5 21:33:58 PST 2025; root:xnu-11417.140.69.705.2~1/RELEASE_ARM64_T6000
+  Available memory (MB): 32768
+  Available CPU cores: 10
+```

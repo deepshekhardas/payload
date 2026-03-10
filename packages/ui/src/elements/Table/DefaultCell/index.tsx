@@ -53,7 +53,7 @@ export const DefaultCell: React.FC<DefaultCellComponentProps> = (props) => {
   const wrapElementProps: {
     className?: string
     href?: string
-    onClick?: () => void
+    onClick?: (event?: React.MouseEvent) => void
     prefetch?: false
     type?: 'button'
   } = {
@@ -80,7 +80,14 @@ export const DefaultCell: React.FC<DefaultCellComponentProps> = (props) => {
   if (typeof onClick === 'function') {
     WrapElement = 'button'
     wrapElementProps.type = 'button'
-    wrapElementProps.onClick = () => {
+    wrapElementProps.onClick = (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey) {
+        if (wrapElementProps.href) {
+          window.open(wrapElementProps.href, '_blank')
+          return
+        }
+      }
+
       onClick({
         cellData,
         collectionSlug: collectionConfig?.slug,
