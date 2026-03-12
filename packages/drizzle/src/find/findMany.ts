@@ -56,6 +56,7 @@ export const findMany = async function find({
     sort,
     tableName,
     where: whereArg,
+    versions,
   })
 
   const orderedIDMap: Record<number | string, number> = {}

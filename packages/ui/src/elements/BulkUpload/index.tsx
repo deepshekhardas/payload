@@ -141,6 +141,7 @@ export type BulkUploadContext = {
   collectionSlug: CollectionSlug
   drawerSlug: string
   initialFiles: FileList
+  initialFolderID?: number | string
   /**
    * Like initialFiles, but allows manually providing initial form state or the form ID for each file
    */
@@ -165,6 +166,7 @@ export type BulkUploadContext = {
   selectableCollections?: null | string[]
   setCollectionSlug: (slug: string) => void
   setInitialFiles: (files: FileList) => void
+  setInitialFolderID: (folderID: number | string) => void
   setInitialForms: (
     forms: ((forms: InitialForms | undefined) => InitialForms | undefined) | InitialForms,
   ) => void
@@ -192,6 +194,7 @@ const Context = React.createContext<BulkUploadContext>({
   selectableCollections: null,
   setCollectionSlug: () => null,
   setInitialFiles: () => null,
+  setInitialFolderID: () => null,
   setInitialForms: () => null,
   setMaxFiles: () => null,
   setOnCancel: () => null,
@@ -212,6 +215,7 @@ export function BulkUploadProvider({
   const [onSuccessFunction, setOnSuccessFunction] = React.useState<BulkUploadContext['onSuccess']>()
   const [onCancelFunction, setOnCancelFunction] = React.useState<BulkUploadContext['onCancel']>()
   const [initialFiles, setInitialFiles] = React.useState<FileList>(undefined)
+  const [initialFolderID, setInitialFolderID] = React.useState<number | string>(undefined)
   const [initialForms, setInitialForms] = React.useState<InitialForms>(undefined)
   const [maxFiles, setMaxFiles] = React.useState<number>(undefined)
   const [successfullyUploaded, setSuccessfullyUploaded] = React.useState<boolean>(false)
@@ -231,6 +235,7 @@ export function BulkUploadProvider({
         collectionSlug: collection,
         drawerSlug,
         initialFiles,
+        initialFolderID,
         initialForms,
         maxFiles,
         onCancel: () => {
@@ -246,6 +251,7 @@ export function BulkUploadProvider({
         selectableCollections,
         setCollectionSlug: setCollection,
         setInitialFiles,
+        setInitialFolderID,
         setInitialForms,
         setMaxFiles,
         setOnCancel,

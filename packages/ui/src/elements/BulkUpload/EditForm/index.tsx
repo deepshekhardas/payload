@@ -32,6 +32,7 @@ export function EditForm({
   updateUploadEdits,
   uploadEdits,
 }: EditFormProps) {
+  const { activeIndex, updateFormState } = useFormsManager()
   const {
     action,
     collectionSlug: docSlug,
@@ -99,11 +100,24 @@ export function EditForm({
         skipValidation: !submitted,
       })
 
+      updateFormState({
+        formState: newFormState,
+        index: activeIndex,
+      })
+
       abortOnChangeRef.current = null
 
       return newFormState
     },
-    [collectionSlug, schemaPath, getDocPreferences, getFormState, docPermissions],
+    [
+      collectionSlug,
+      schemaPath,
+      getDocPreferences,
+      getFormState,
+      docPermissions,
+      updateFormState,
+      activeIndex,
+    ],
   )
 
   useEffect(() => {

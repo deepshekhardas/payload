@@ -411,7 +411,7 @@ describe('configToJSONSchema', () => {
         someBlockField: {
           type: ['array', 'null'],
           items: {
-            oneOf: [expectedBlockSchema],
+            oneOf: [{ $ref: '#/definitions/SharedBlock' }],
           },
         },
       },

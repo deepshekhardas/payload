@@ -25,6 +25,7 @@ type BuildQueryArgs = {
   selectLocale?: boolean
   sort?: Sort
   tableName: string
+  versions?: boolean
   where: Where
 }
 
@@ -49,6 +50,7 @@ export const buildQuery = function buildQuery({
   sort,
   tableName,
   where: incomingWhere,
+  versions,
 }: BuildQueryArgs): BuildQueryResult {
   const selectFields: Record<string, GenericColumn> = {
     id: adapter.tables[tableName].id,
@@ -70,6 +72,7 @@ export const buildQuery = function buildQuery({
       selectLocale,
       tableName,
       where: incomingWhere,
+      versions,
     })
   }
 

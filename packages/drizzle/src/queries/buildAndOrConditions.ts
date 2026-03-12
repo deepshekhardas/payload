@@ -18,6 +18,7 @@ export function buildAndOrConditions({
   selectFields,
   selectLocale,
   tableName,
+  versions,
   where,
 }: {
   adapter: DrizzleAdapter
@@ -32,6 +33,7 @@ export function buildAndOrConditions({
   selectFields: Record<string, GenericColumn>
   selectLocale?: boolean
   tableName: string
+  versions?: boolean
   where: Where[]
 }): SQL[] {
   const completedConditions = []
@@ -53,6 +55,7 @@ export function buildAndOrConditions({
         selectLocale,
         tableName,
         where: condition,
+        versions,
       })
       if (result && Object.keys(result).length > 0) {
         completedConditions.push(result)

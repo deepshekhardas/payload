@@ -30,6 +30,7 @@ type Args = {
   selectFields: Record<string, GenericColumn>
   selectLocale?: boolean
   tableName: string
+  versions?: boolean
   where: Where
 }
 
@@ -45,6 +46,7 @@ export function parseParams({
   selectLocale,
   tableName,
   where,
+  versions,
 }: Args): SQL {
   let result: SQL
   const constraints: SQL[] = []
@@ -73,6 +75,7 @@ export function parseParams({
             selectLocale,
             tableName,
             where: condition,
+            versions,
           })
           if (builtConditions.length > 0) {
             result = conditionOperator(...builtConditions)
@@ -109,6 +112,7 @@ export function parseParams({
                   selectLocale,
                   tableName,
                   value: val,
+                  versions,
                 })
 
                 const resolvedColumn =

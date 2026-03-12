@@ -62,6 +62,7 @@ type Args = {
   selectFields: Record<string, GenericColumn>
   selectLocale?: boolean
   tableName: string
+  versions?: boolean
   /**
    * If creating a new table name for arrays and blocks, this suffix should be appended to the table name
    */
@@ -95,6 +96,7 @@ export const getTableColumnFromPath = ({
   tableName,
   tableNameSuffix = '',
   value,
+  versions,
 }: Args): TableColumn => {
   const fieldPath = incomingSegments[0]
   let locale = incomingLocale
@@ -105,9 +107,10 @@ export const getTableColumnFromPath = ({
   let newTableName = tableName
 
   if (!field && fieldPath === 'id') {
-    selectFields.id = adapter.tables[newTableName].id
+    const columnName = versions ? 'parent' : 'id'
+    selectFields.id = adapter.tables[newTableName][columnName]
     return {
-      columnName: 'id',
+      columnName,
       constraints,
       field: {
         name: 'id',
@@ -185,6 +188,7 @@ export const getTableColumnFromPath = ({
           selectLocale,
           tableName: newTableName,
           value,
+          versions,
         })
       }
       case 'blocks': {
@@ -290,6 +294,7 @@ export const getTableColumnFromPath = ({
               selectLocale,
               tableName: newTableName,
               value,
+              versions,
             })
           } catch (_) {
             // this is fine, not every block will have the field
@@ -358,6 +363,7 @@ export const getTableColumnFromPath = ({
           tableName: newTableName,
           tableNameSuffix: `${tableNameSuffix}${toSnakeCase(field.name)}_`,
           value,
+          versions,
         })
       }
 
@@ -460,6 +466,7 @@ export const getTableColumnFromPath = ({
             selectLocale,
             tableName: relationshipTableName,
             value,
+            versions,
           })
         }
 
@@ -510,6 +517,7 @@ export const getTableColumnFromPath = ({
           selectFields,
           tableName: newTableName,
           value,
+          versions,
         })
 
         break
@@ -802,6 +810,7 @@ export const getTableColumnFromPath = ({
             selectLocale,
             tableName: newTableName,
             value,
+            versions,
           })
         } else if (
           pathSegments.length > 1 &&
@@ -866,6 +875,7 @@ export const getTableColumnFromPath = ({
             selectFields,
             tableName: newTableName,
             value,
+            versions,
           })
         }
 
@@ -932,6 +942,7 @@ export const getTableColumnFromPath = ({
             tableName: newTableName,
             tableNameSuffix: `${tableNameSuffix}${toSnakeCase(field.name)}_`,
             value,
+            versions,
           })
         }
         return getTableColumnFromPath({
@@ -952,6 +963,7 @@ export const getTableColumnFromPath = ({
           tableName: newTableName,
           tableNameSuffix,
           value,
+          versions,
         })
       }
 

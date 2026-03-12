@@ -66,15 +66,19 @@ export const formatDocTitle = ({
   // richtext lexical case. We convert the first child of root to plain text
   if (title && isSerializedLexicalEditor(title)) {
     title = formatLexicalDocTitle(title.root.children?.[0]?.children || [], '')
+  } else if (Array.isArray(title)) {
+    title = formatLexicalDocTitle(title, '')
   }
 
   if (!title && isSerializedLexicalEditor(fallback)) {
     title = formatLexicalDocTitle(fallback.root.children?.[0]?.children || [], '')
+  } else if (!title && Array.isArray(fallback)) {
+    title = formatLexicalDocTitle(fallback, '')
   }
 
   if (!title) {
     title = typeof fallback === 'string' ? fallback : `[${i18n.t('general:untitled')}]`
   }
 
-  return title
+  return typeof title === 'string' ? title : `[${i18n.t('general:untitled')}]`
 }

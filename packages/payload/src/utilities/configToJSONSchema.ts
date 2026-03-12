@@ -449,6 +449,10 @@ export function fieldsToJSONSchema(
                             resolvedBlock.interfaceName,
                             resolvedBlockSchema,
                           )
+
+                          return {
+                            $ref: `#/definitions/${resolvedBlock.interfaceName}`,
+                          }
                         }
 
                         return resolvedBlockSchema
@@ -475,7 +479,9 @@ export function fieldsToJSONSchema(
 
                       if (block.interfaceName) {
                         interfaceNameDefinitions.set(block.interfaceName, blockSchema)
-                        return blockSchema
+                        return {
+                          $ref: `#/definitions/${block.interfaceName}`,
+                        }
                       }
 
                       return blockSchema

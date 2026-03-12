@@ -60,6 +60,13 @@ type FormsManagerContext = {
     index: number
   }) => void
   readonly totalErrorCount?: number
+  readonly updateFormState: ({
+    formState,
+    index,
+  }: {
+    formState: FormState
+    index: number
+  }) => void
   readonly updateUploadEdits: (args: UploadEdits) => void
 }
 
@@ -81,6 +88,7 @@ const Context = React.createContext<FormsManagerContext>({
   setActiveIndex: () => 0,
   setFormTotalErrorCount: () => {},
   totalErrorCount: 0,
+  updateFormState: () => {},
   updateUploadEdits: () => {},
 })
 
@@ -131,9 +139,11 @@ export function FormsManagerProvider({ children }: FormsManagerProps) {
     collectionSlug,
     drawerSlug,
     initialFiles,
+    initialFolderID,
     initialForms,
     onSuccess,
     setInitialFiles,
+    setInitialFolderID,
     setInitialForms,
     setSuccessfullyUploaded,
   } = useBulkUpload()
@@ -270,10 +280,22 @@ export function FormsManagerProvider({ children }: FormsManagerProps) {
       }
       dispatch({
         type: 'ADD_FORMS',
-        forms: Array.from(files).map((file) => ({
-          file,
-          initialState: initialStateRef.current,
-        })),
+        forms: Array.from(files).map((file) => {
+          const initialState = { ...initialStateRef.current }
+
+          if (initialFolderID && config.folders?.fieldName) {
+            initialState[config.folders.fieldName] = {
+              initialValue: initialFolderID,
+              valid: true,
+              value: initialFolderID,
+            }
+          }
+
+          return {
+            file,
+            initialState,
+          }
+        }),
       })
       toggleLoadingOverlay({ isLoading: false, key: 'addingDocs' })
     },
@@ -291,10 +313,22 @@ export function FormsManagerProvider({ children }: FormsManagerProps) {
 
     dispatch({
       type: 'ADD_FORMS',
-      forms: initialForms.map((form) => ({
-        ...form,
-        initialState: form?.initialState || initialStateRef.current,
-      })),
+      forms: initialForms.map((form) => {
+        const initialState = { ...(form?.initialState || initialStateRef.current) }
+
+        if (initialFolderID && config.folders?.fieldName) {
+          initialState[config.folders.fieldName] = {
+            initialValue: initialFolderID,
+            valid: true,
+            value: initialFolderID,
+          }
+        }
+
+        return {
+          ...form,
+          initialState,
+        }
+      }),
     })
 
     toggleLoadingOverlay({ isLoading: false, key: 'addingDocs' })
@@ -565,6 +599,18 @@ export function FormsManagerProvider({ children }: FormsManagerProps) {
     [collectionSlug, docPermissions, forms, getFormState, hasSubmitted],
   )
 
+  const updateFormState: FormsManagerContext['updateFormState'] = React.useCallback(
+    ({ formState, index }) => {
+      dispatch({
+        type: 'UPDATE_FORM',
+        errorCount: forms[index].errorCount,
+        formState,
+        index,
+      })
+    },
+    [forms],
+  )
+
   const updateUploadEdits = React.useCallback<FormsManagerContext['updateUploadEdits']>(
     (uploadEdits) => {
       dispatch({
@@ -655,6 +701,7 @@ export function FormsManagerProvider({ children }: FormsManagerProps) {
         setActiveIndex,
         setFormTotalErrorCount,
         totalErrorCount,
+        updateFormState,
         updateUploadEdits,
       }}
     >
