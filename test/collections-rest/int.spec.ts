@@ -11,6 +11,7 @@ import type { NextRESTClient } from '../__helpers/shared/NextRESTClient.js'
 import type { Relation } from './config.js'
 import type { Post } from './payload-types.js'
 
+import { hasTransactions } from '../__helpers/int/vitest.js'
 import { getFormDataSize } from '../__helpers/shared/getFormDataSize.js'
 import { initPayloadInt } from '../__helpers/shared/initPayloadInt.js'
 import { largeDocumentsCollectionSlug } from './collections/LargeDocuments.js'
@@ -342,12 +343,25 @@ describe('collections-rest', () => {
         const result = await response.json()
 
         expect(response.status).toEqual(400)
-        expect(result.docs).toHaveLength(1)
-        expect(result.docs[0].id).toEqual(successDoc.id)
-        expect(result.errors).toHaveLength(1)
-        expect(result.errors[0].message).toBeDefined()
-        expect(result.errors[0].id).toEqual(errorDoc.id)
-        expect(result.docs[0].text).toEqual(update)
+
+        if (hasTransactions) {
+          // With transactions enabled, when one doc fails the entire transaction is rolled back
+          // and all docs are reported as errors (consistent all-or-nothing behavior)
+          expect(result.docs).toHaveLength(0)
+          expect(result.errors).toHaveLength(2)
+        } else {
+          // Without transactions, partial success is possible
+          expect(result.docs).toHaveLength(1)
+          expect(result.docs[0].id).toEqual(successDoc.id)
+          expect(result.errors).toHaveLength(1)
+          expect(result.errors[0].id).toEqual(errorDoc.id)
+        }
+
+        // The doc that triggered the error should have the original error message
+        const triggeringError = result.errors.find(
+          (e: { id: number | string }) => e.id === errorDoc.id,
+        )
+        expect(triggeringError?.message).toBeDefined()
       })
 
       it('should bulk delete', async () => {
@@ -367,7 +381,7 @@ describe('collections-rest', () => {
       })
 
       it('should return formatted errors for bulk deletes', async () => {
-        await payload.create({
+        const errorDoc = await payload.create({
           collection: errorOnHookSlug,
           data: {
             errorAfterDelete: true,
@@ -388,10 +402,23 @@ describe('collections-rest', () => {
         const result = await response.json()
 
         expect(response.status).toEqual(400)
-        expect(result.docs).toHaveLength(1)
-        expect(result.errors).toHaveLength(1)
-        expect(result.errors[0].message).toBeDefined()
-        expect(result.errors[0].id).toBeDefined()
+
+        if (hasTransactions) {
+          // With transactions enabled, when one doc fails the entire transaction is rolled back
+          // and all docs are reported as errors (consistent all-or-nothing behavior)
+          expect(result.docs).toHaveLength(0)
+          expect(result.errors).toHaveLength(2)
+        } else {
+          // Without transactions, partial success is possible
+          expect(result.docs).toHaveLength(1)
+          expect(result.errors).toHaveLength(1)
+        }
+
+        // The doc that triggered the error should have the original error message
+        const triggeringError = result.errors.find(
+          (e: { id: number | string }) => e.id === errorDoc.id,
+        )
+        expect(triggeringError?.message).toBeDefined()
       })
     })
 
@@ -1223,6 +1250,49 @@ describe('collections-rest', () => {
 
           expect(response.status).toEqual(200)
           expect(result.docs).toHaveLength(0)
+        })
+
+        // https://github.com/payloadcms/payload/issues/14471 - ensure geospatial queries use true geodetic meters, not the distorted meters of EPSG:3857
+        it('should use true geodetic meters at high latitudes', async () => {
+          if (payload.db.name === 'sqlite') {
+            return
+          }
+
+          // A point ~10 km north of NYC: lat += 10000/111320 ≈ 0.0898°
+          const queryLng = -74.0059
+          const queryLat = 40.7128
+          const pointLat = queryLat + 0.0898 // ~10 km north
+          let createdId: number | string | undefined
+
+          try {
+            const created = await payload.create({
+              collection: pointSlug,
+              data: { point: [queryLng, pointLat] },
+            })
+
+            createdId = created.id
+
+            // Query with 12 km radius — the point at ~10 km should be within range.
+            // With the old EPSG:3857 approach, the effective radius at this latitude was
+            // only ~9 km, causing the point to be missed.
+            const response = await restClient.GET(`/${pointSlug}`, {
+              query: {
+                where: {
+                  point: {
+                    near: `${queryLng}, ${queryLat}, 12000`,
+                  },
+                },
+              },
+            })
+            const result: any = await response.json()
+
+            expect(response.status).toEqual(200)
+            expect(result.docs.map((d: { id: number | string }) => d.id)).toContain(createdId)
+          } finally {
+            if (createdId !== undefined) {
+              await payload.delete({ collection: pointSlug, id: createdId })
+            }
+          }
         })
 
         it('should not return a point far away', async () => {

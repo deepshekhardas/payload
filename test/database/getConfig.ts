@@ -832,6 +832,26 @@ export const getConfig: () => Partial<Config> = () => ({
             },
           ],
         },
+        {
+          name: 'blockWithVirtual',
+          type: 'blocks',
+          blocks: [
+            {
+              slug: 'blockWithVirtual',
+              fields: [
+                {
+                  name: 'text',
+                  type: 'text',
+                },
+                {
+                  name: 'virtualField',
+                  type: 'text',
+                  virtual: true,
+                },
+              ],
+            },
+          ],
+        },
       ],
     },
     {
@@ -1016,6 +1036,7 @@ export const getConfig: () => Partial<Config> = () => ({
         },
       ],
     },
+<<<<<<< HEAD
     {
       slug: 'select-has-many',
       fields: [
@@ -1032,6 +1053,103 @@ export const getConfig: () => Partial<Config> = () => ({
           options: ['apple', 'bananabread', 'banana'],
         },
       ],
+    },
+    {
+      slug: 'virtual-linked-tenants',
+      fields: [
+        {
+          name: 'slug',
+          type: 'text',
+          required: true,
+        },
+      ],
+    },
+    {
+      slug: 'virtual-linked-roles',
+      access: {
+        read: () => ({
+          tenantSlug: {
+            exists: true,
+          },
+        }),
+      },
+      fields: [
+        {
+          name: 'project',
+          type: 'relationship',
+          relationTo: 'virtual-linked-projects',
+          required: true,
+        },
+        {
+          name: 'tenant',
+          type: 'relationship',
+          relationTo: 'virtual-linked-tenants',
+          required: true,
+        },
+        {
+          name: 'tenantSlug',
+          type: 'text',
+          virtual: 'tenant.slug',
+        },
+      ],
+    },
+    {
+      slug: 'virtual-linked-projects',
+      access: {
+        read: () => true,
+      },
+      fields: [
+        {
+          name: 'roles',
+          type: 'join',
+          collection: 'virtual-linked-roles',
+          on: 'project',
+        },
+      ],
+    },
+    // Collection for testing bulk operation error handling
+    {
+      slug: 'bulk-error-test',
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'shouldFailOnUpdate',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+        {
+          name: 'shouldFailOnDelete',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+      ],
+      hooks: {
+        beforeChange: [
+          ({ data }: { data: Record<string, unknown> }) => {
+            // Throw error if shouldFailOnUpdate is being set to true
+            if (data.shouldFailOnUpdate) {
+              throw new Error('Intentional update error for testing')
+            }
+            return data
+          },
+        ],
+        beforeDelete: [
+          async ({ id, req }) => {
+            const doc = await req.payload.findByID({
+              id,
+              collection: 'bulk-error-test',
+              depth: 0,
+            })
+            if (doc?.shouldFailOnDelete) {
+              throw new Error('Intentional delete error for testing')
+            }
+          },
+        ],
+      },
     },
   ],
   globals: [
