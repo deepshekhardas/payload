@@ -80,8 +80,16 @@ export type DraftFlagFromGlobalSlug<TSlug extends GlobalSlug> = GeneratedTypes e
     }
 
 export type BeforeValidateHook = (args: {
+  /**
+   * If true, this operation is an autosave
+   */
+  autosave?: boolean
   context: RequestContext
   data?: any
+  /**
+   * If true, this operation is saving a draft
+   */
+  draft?: boolean
   /** The global which this hook is being run on */
   global: SanitizedGlobalConfig
   originalDoc?: any
@@ -93,8 +101,16 @@ export type BeforeValidateHook = (args: {
 }) => any
 
 export type BeforeChangeHook = (args: {
+  /**
+   * If true, this operation is an autosave
+   */
+  autosave?: boolean
   context: RequestContext
   data: any
+  /**
+   * If true, this operation is saving a draft
+   */
+  draft?: boolean
   /** The global which this hook is being run on */
   global: SanitizedGlobalConfig
   originalDoc?: any
@@ -106,9 +122,17 @@ export type BeforeChangeHook = (args: {
 }) => any
 
 export type AfterChangeHook = (args: {
+  /**
+   * If true, this operation is an autosave
+   */
+  autosave?: boolean
   context: RequestContext
   data: any
   doc: any
+  /**
+   * If true, this operation is saving a draft
+   */
+  draft?: boolean
   /** The global which this hook is being run on */
   global: SanitizedGlobalConfig
   /**
@@ -134,6 +158,10 @@ export type BeforeReadHook = (args: {
 export type AfterReadHook = (args: {
   context: RequestContext
   doc: any
+  /**
+   * If true, this operation is reading a draft version
+   */
+  draft?: boolean
   findMany?: boolean
   /** The global which this hook is being run on */
   global: SanitizedGlobalConfig
@@ -310,8 +338,10 @@ export type GlobalConfig<TSlug extends GlobalSlug = any> = {
   versions?: boolean | IncomingGlobalVersions
 }
 
-export interface SanitizedGlobalConfig
-  extends Omit<DeepRequired<GlobalConfig>, 'endpoints' | 'fields' | 'slug' | 'versions'> {
+export interface SanitizedGlobalConfig extends Omit<
+  DeepRequired<GlobalConfig>,
+  'endpoints' | 'fields' | 'slug' | 'versions'
+> {
   endpoints: Endpoint[] | false
   fields: Field[]
   /**

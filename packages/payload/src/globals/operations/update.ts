@@ -212,8 +212,10 @@ export const updateOperation = async <
       for (const hook of globalConfig.hooks.beforeValidate) {
         data =
           (await hook({
+            autosave,
             context: req.context,
             data,
+            draft: draftArg,
             global: globalConfig,
             originalDoc,
             overrideAccess,
@@ -230,8 +232,10 @@ export const updateOperation = async <
       for (const hook of globalConfig.hooks.beforeChange) {
         data =
           (await hook({
+            autosave,
             context: req.context,
             data,
+            draft: draftArg,
             global: globalConfig,
             originalDoc,
             overrideAccess,
@@ -431,6 +435,7 @@ export const updateOperation = async <
           (await hook({
             context: req.context,
             doc: result,
+            draft: draftArg,
             global: globalConfig,
             overrideAccess,
             req,
@@ -461,9 +466,11 @@ export const updateOperation = async <
       for (const hook of globalConfig.hooks.afterChange) {
         result =
           (await hook({
+            autosave,
             context: req.context,
             data,
             doc: result,
+            draft: draftArg,
             global: globalConfig,
             overrideAccess,
             previousDoc: originalDoc,

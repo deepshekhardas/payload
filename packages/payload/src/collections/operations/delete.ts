@@ -171,6 +171,7 @@ export const deleteOperation = async <
               collection: collectionConfig,
               context: req.context,
               req,
+              trash,
             })
           }
         }
@@ -263,6 +264,7 @@ export const deleteOperation = async <
                 collection: collectionConfig,
                 context: req.context,
                 doc: result || doc,
+                draft: undefined,
                 overrideAccess,
                 req,
               })) || result
@@ -282,6 +284,7 @@ export const deleteOperation = async <
                 context: req.context,
                 doc: result,
                 req,
+                trash,
               })) || result
           }
         }

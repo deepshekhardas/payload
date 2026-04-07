@@ -181,6 +181,14 @@ export type BeforeValidateHook<T extends TypeWithID = any> = (args: {
   context: RequestContext
   data?: Partial<T>
   /**
+   * If true, this operation is an autosave
+   */
+  autosave?: boolean
+  /**
+   * If true, this operation is saving a draft
+   */
+  draft?: boolean
+  /**
    * Hook operation being performed
    */
   operation: CreateOrUpdateOperation
@@ -191,6 +199,10 @@ export type BeforeValidateHook<T extends TypeWithID = any> = (args: {
    */
   originalDoc?: T
   req: PayloadRequest
+  /**
+   * If true, this operation is a trash/restore operation
+   */
+  trash?: boolean
 }) => any
 
 export type BeforeChangeHook<T extends TypeWithID = any> = (args: {
@@ -199,6 +211,14 @@ export type BeforeChangeHook<T extends TypeWithID = any> = (args: {
   context: RequestContext
   data: Partial<T>
   /**
+   * If true, this operation is an autosave
+   */
+  autosave?: boolean
+  /**
+   * If true, this operation is saving a draft
+   */
+  draft?: boolean
+  /**
    * Hook operation being performed
    */
   operation: CreateOrUpdateOperation
@@ -209,6 +229,10 @@ export type BeforeChangeHook<T extends TypeWithID = any> = (args: {
    */
   originalDoc?: T
   req: PayloadRequest
+  /**
+   * If true, this operation is a trash/restore operation
+   */
+  trash?: boolean
 }) => any
 
 export type AfterChangeHook<T extends TypeWithID = any> = (args: {
@@ -217,6 +241,14 @@ export type AfterChangeHook<T extends TypeWithID = any> = (args: {
   context: RequestContext
   data: Partial<T>
   doc: T
+  /**
+   * If true, this operation is an autosave
+   */
+  autosave?: boolean
+  /**
+   * If true, this operation is saving a draft
+   */
+  draft?: boolean
   /**
    * Hook operation being performed
    */
@@ -227,6 +259,10 @@ export type AfterChangeHook<T extends TypeWithID = any> = (args: {
   overrideAccess?: boolean
   previousDoc: T
   req: PayloadRequest
+  /**
+   * If true, this operation is a trash/restore operation
+   */
+  trash?: boolean
 }) => any
 
 export type BeforeReadHook<T extends TypeWithID = any> = (args: {
@@ -234,6 +270,10 @@ export type BeforeReadHook<T extends TypeWithID = any> = (args: {
   collection: SanitizedCollectionConfig
   context: RequestContext
   doc: T
+  /**
+   * If true, this operation is reading a draft version
+   */
+  draft?: boolean
   /**
    * Whether access control is being overridden for this operation
    */
@@ -247,6 +287,10 @@ export type AfterReadHook<T extends TypeWithID = any> = (args: {
   collection: SanitizedCollectionConfig
   context: RequestContext
   doc: T
+  /**
+   * If true, this operation is reading a draft version
+   */
+  draft?: boolean
   findMany?: boolean
   /**
    * Whether access control is being overridden for this operation
@@ -262,6 +306,10 @@ export type BeforeDeleteHook = (args: {
   context: RequestContext
   id: number | string
   req: PayloadRequest
+  /**
+   * If true, this operation is a trash/restore operation (soft delete)
+   */
+  trash?: boolean
 }) => any
 
 export type AfterDeleteHook<T extends TypeWithID = any> = (args: {
@@ -271,6 +319,10 @@ export type AfterDeleteHook<T extends TypeWithID = any> = (args: {
   doc: T
   id: number | string
   req: PayloadRequest
+  /**
+   * If true, this operation was a trash/restore operation (soft delete)
+   */
+  trash?: boolean
 }) => any
 
 export type AfterOperationHook<TOperationGeneric extends CollectionSlug = string> = (
@@ -776,11 +828,10 @@ export type SanitizedJoins = {
  * @todo remove the `DeepRequired` in v4.
  * We don't actually guarantee that all properties are set when sanitizing configs.
  */
-export interface SanitizedCollectionConfig
-  extends Omit<
-    DeepRequired<CollectionConfig>,
-    'admin' | 'auth' | 'endpoints' | 'fields' | 'folders' | 'slug' | 'upload' | 'versions'
-  > {
+export interface SanitizedCollectionConfig extends Omit<
+  DeepRequired<CollectionConfig>,
+  'admin' | 'auth' | 'endpoints' | 'fields' | 'folders' | 'slug' | 'upload' | 'versions'
+> {
   admin: CollectionAdminOptions
   auth: Auth
   endpoints: Endpoint[] | false

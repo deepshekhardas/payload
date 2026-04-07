@@ -115,11 +115,11 @@ export const updateDocument = async <
     !publishAllLocales
   const shouldSavePassword = Boolean(
     password &&
-      collectionConfig.auth &&
-      (!collectionConfig.auth.disableLocalStrategy ||
-        (typeof collectionConfig.auth.disableLocalStrategy === 'object' &&
-          collectionConfig.auth.disableLocalStrategy.enableFields)) &&
-      !isSavingDraft,
+    collectionConfig.auth &&
+    (!collectionConfig.auth.disableLocalStrategy ||
+      (typeof collectionConfig.auth.disableLocalStrategy === 'object' &&
+        collectionConfig.auth.disableLocalStrategy.enableFields)) &&
+    !isSavingDraft,
   )
 
   if (isSavingDraft) {
@@ -202,12 +202,15 @@ export const updateDocument = async <
     for (const hook of collectionConfig.hooks.beforeValidate) {
       data =
         (await hook({
+          autosave,
           collection: collectionConfig,
           context: req.context,
           data,
+          draft: draftArg,
           operation: 'update',
           originalDoc,
           req,
+          trash: collectionConfig.trash && (Boolean(data?.deletedAt) || isRestoringDraftFromTrash),
         })) || data
     }
   }
@@ -228,12 +231,15 @@ export const updateDocument = async <
     for (const hook of collectionConfig.hooks.beforeChange) {
       data =
         (await hook({
+          autosave,
           collection: collectionConfig,
           context: req.context,
           data,
+          draft: draftArg,
           operation: 'update',
           originalDoc,
           req,
+          trash: collectionConfig.trash && (Boolean(data?.deletedAt) || isRestoringDraftFromTrash),
         })) || data
     }
   }
@@ -420,6 +426,7 @@ export const updateDocument = async <
           collection: collectionConfig,
           context: req.context,
           doc: result,
+          draft: draftArg,
           overrideAccess,
           req,
         })) || result
@@ -449,14 +456,17 @@ export const updateDocument = async <
     for (const hook of collectionConfig.hooks.afterChange) {
       result =
         (await hook({
+          autosave,
           collection: collectionConfig,
           context: req.context,
           data,
           doc: result,
+          draft: draftArg,
           operation: 'update',
           overrideAccess,
           previousDoc: originalDoc,
           req,
+          trash: collectionConfig.trash && (Boolean(data?.deletedAt) || isRestoringDraftFromTrash),
         })) || result
     }
   }

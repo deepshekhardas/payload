@@ -97,6 +97,7 @@ export const deleteByIDOperation = async <TSlug extends CollectionSlug, TSelect 
           collection: collectionConfig,
           context: req.context,
           req,
+          trash,
         })
       }
     }
@@ -240,6 +241,7 @@ export const deleteByIDOperation = async <TSlug extends CollectionSlug, TSelect 
             collection: collectionConfig,
             context: req.context,
             doc: result,
+            draft: undefined,
             overrideAccess,
             req,
           })) || result
@@ -259,6 +261,7 @@ export const deleteByIDOperation = async <TSlug extends CollectionSlug, TSelect 
             context: req.context,
             doc: result,
             req,
+            trash,
           })) || result
       }
     }

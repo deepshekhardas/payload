@@ -193,13 +193,15 @@ export const createOperation = async <
     // beforeValidate - Collections
     // /////////////////////////////////////
 
-    if (collectionConfig.hooks.beforeValidate?.length) {
+    if (collectionConfig.hooks?.beforeValidate?.length) {
       for (const hook of collectionConfig.hooks.beforeValidate) {
         data =
           (await hook({
+            autosave,
             collection: collectionConfig,
             context: req.context,
             data,
+            draft,
             operation: 'create',
             originalDoc: duplicatedFromDoc,
             req,
@@ -215,9 +217,11 @@ export const createOperation = async <
       for (const hook of collectionConfig.hooks.beforeChange) {
         data =
           (await hook({
+            autosave,
             collection: collectionConfig,
             context: req.context,
             data,
+            draft,
             operation: 'create',
             originalDoc: duplicatedFromDoc,
             req,
@@ -384,9 +388,11 @@ export const createOperation = async <
       for (const hook of collectionConfig.hooks.afterRead) {
         result =
           (await hook({
+            autosave,
             collection: collectionConfig,
             context: req.context,
             doc: result,
+            draft,
             overrideAccess,
             req,
           })) || result
@@ -416,10 +422,12 @@ export const createOperation = async <
       for (const hook of collectionConfig.hooks.afterChange) {
         result =
           (await hook({
+            autosave,
             collection: collectionConfig,
             context: req.context,
             data,
             doc: result,
+            draft,
             operation: 'create',
             overrideAccess,
             previousDoc: {},
