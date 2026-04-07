@@ -45,6 +45,7 @@ import {
 type Args = {
   collectionConfig?: CollectionConfig
   config: Config
+  dbName?: string | false
   existingFieldNames?: Set<string>
   fields: Field[]
   globalConfig?: GlobalConfig
@@ -357,6 +358,7 @@ export const sanitizeFields = async ({
         block.fields = await sanitizeFields({
           collectionConfig,
           config,
+          dbName: 'dbName' in field ? field.dbName : undefined,
           existingFieldNames: new Set(),
           fields: block.fields,
           isTopLevelField: false,
@@ -374,6 +376,7 @@ export const sanitizeFields = async ({
       field.fields = await sanitizeFields({
         collectionConfig,
         config,
+        dbName: 'dbName' in field ? field.dbName : undefined,
         existingFieldNames: fieldAffectsData ? new Set() : existingFieldNames,
         fields: field.fields,
         isTopLevelField: isTopLevelField && !fieldAffectsData,
