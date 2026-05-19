@@ -122,7 +122,7 @@ export const updateDocument = async <
       !isSavingDraft,
   )
 
-  if (isSavingDraft) {
+  if (isSavingDraft && !id) {
     data._status = 'draft'
   }
 

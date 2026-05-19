@@ -16,10 +16,18 @@ export const initializeMCPHandler = (pluginOptions: MCPPluginConfig) => {
     req.payloadAPI = 'MCP' as const
 
     const getDefaultMcpAccessSettings = async (overrideApiKey?: null | string) => {
-      const apiKey =
-        (overrideApiKey ?? req.headers.get('Authorization')?.startsWith('Bearer '))
-          ? req.headers.get('Authorization')?.replace('Bearer ', '').trim()
-          : null
+      const authHeader = req.headers.get('Authorization') || ''
+      let apiKey = overrideApiKey ?? null
+
+      // Try Payload convention first: "payload-mcp-api-keys API-Key <key>"
+      if (!apiKey && authHeader.startsWith('payload-mcp-api-keys API-Key ')) {
+        apiKey = authHeader.replace('payload-mcp-api-keys API-Key ', '').trim()
+      }
+
+      // Fall back to Bearer: "Bearer <key>"
+      if (!apiKey && authHeader.startsWith('Bearer ')) {
+        apiKey = authHeader.replace('Bearer ', '').trim()
+      }
 
       if (apiKey === null) {
         throw new UnauthorizedError()
