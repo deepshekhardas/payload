@@ -9,6 +9,7 @@ import { LinkIcon } from '../../icons/Link/index.js'
 import { PlusIcon } from '../../icons/Plus/index.js'
 import { SpinnerIcon } from '../../icons/Spinner/index.js'
 import { SwapIcon } from '../../icons/Swap/index.js'
+import { WriteIcon } from '../../icons/Write/index.js'
 import { XIcon } from '../../icons/X/index.js'
 import { Link } from '../Link/index.js'
 import { Popup } from '../Popup/index.js'
@@ -21,6 +22,7 @@ const icons = {
   link: LinkIcon,
   plus: PlusIcon,
   swap: SwapIcon,
+  write: WriteIcon,
   x: XIcon,
 }
 
@@ -75,8 +77,10 @@ export const Button: React.FC<Props> = (props) => {
     newTab,
     onClick,
     onMouseDown,
+    popupIconSize,
     ref,
     round,
+    selected,
     size = 'medium',
     SubMenuPopupContent,
     to,
@@ -101,6 +105,7 @@ export const Button: React.FC<Props> = (props) => {
     !SubMenuPopupContent && `${baseClass}--withoutPopup`,
     !margin && `${baseClass}--no-margin`,
     loading && `${baseClass}--loading`,
+    icon && !children && `${baseClass}--icon-only`,
   ]
     .filter(Boolean)
     .join(' ')
@@ -119,6 +124,7 @@ export const Button: React.FC<Props> = (props) => {
     buttonStyle && `${baseClass}--style-${buttonStyle}`,
     isDisabled && `${baseClass}--disabled`,
     round && `${baseClass}--round`,
+    selected && `${baseClass}--selected`,
     SubMenuPopupContent ? `${baseClass}--withPopup` : `${baseClass}--withoutPopup`,
   ]
     .filter(Boolean)
@@ -201,7 +207,7 @@ export const Button: React.FC<Props> = (props) => {
       <div className={styleClasses}>
         {buttonElement}
         <Popup
-          button={<ChevronIcon />}
+          button={<ChevronIcon size={popupIconSize} />}
           buttonSize={size}
           className={disabled && !enableSubMenu ? `${baseClass}--popup-disabled` : ''}
           disabled={disabled && !enableSubMenu}
@@ -209,7 +215,7 @@ export const Button: React.FC<Props> = (props) => {
           id={`${id}-popup`}
           noBackground
           render={({ close }) => SubMenuPopupContent({ close: () => close() })}
-          size="large"
+          size="small"
           verticalAlign="bottom"
         />
       </div>

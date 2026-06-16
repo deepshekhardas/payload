@@ -1,10 +1,4 @@
 import { expect, test } from '@playwright/test'
-import { clickPillSelectorItem, toggleColumn } from '__helpers/e2e/columns/index.js'
-import { addListFilter, openListFilters } from '__helpers/e2e/filters/index.js'
-import { addGroupBy, clearGroupBy } from '__helpers/e2e/groupBy/index.js'
-import { navigateToListView } from '__helpers/e2e/navigateToListView.js'
-import { openNav } from '__helpers/e2e/toggleNav.js'
-import { reInitializeDB } from '__helpers/shared/clearAndSeed/reInitializeDB.js'
 import * as path from 'path'
 import { wait } from 'payload/shared'
 import { fileURLToPath } from 'url'
@@ -12,13 +6,19 @@ import { fileURLToPath } from 'url'
 import type { PayloadTestSDK } from '../__helpers/shared/sdk/index.js'
 import type { Config, PayloadQueryPreset } from './payload-types.js'
 
+import { clickPillSelectorItem, toggleColumn } from '../__helpers/e2e/columns/index.js'
+import { addListFilter, openListFilters } from '../__helpers/e2e/filters/index.js'
+import { addGroupBy, clearGroupBy } from '../__helpers/e2e/groupBy/index.js'
 import {
   ensureCompilationIsDone,
   exactText,
   initPageConsoleErrorCatch,
   saveDocAndAssert,
 } from '../__helpers/e2e/helpers.js'
+import { navigateToListView } from '../__helpers/e2e/navigateToListView.js'
+import { openNav } from '../__helpers/e2e/toggleNav.js'
 import { AdminUrlUtil } from '../__helpers/shared/adminUrlUtil.js'
+import { reInitializeDB } from '../__helpers/shared/clearAndSeed/reInitializeDB.js'
 import { initPayloadE2ENoConfig } from '../__helpers/shared/initPayloadE2ENoConfig.js'
 import { TEST_TIMEOUT_LONG } from '../playwright.config.js'
 import { assertURLParams } from './helpers/assertURLParams.js'
@@ -120,11 +120,10 @@ describe('Query Presets', () => {
     const editModal = page.locator('[id^=doc-drawer_payload-query-presets_0_]')
     await expect(editModal).toBeVisible()
 
-    // Verify the Where field is visible (empty state: "Add Filter" or "No filters set")
+    // Verify the Where field is visible (empty state renders an empty where-builder)
     const whereField = editModal.locator('.query-preset-where-field')
     await expect(whereField).toBeVisible()
     await expect(whereField.locator('.where-builder')).toBeVisible()
-    await expect(whereField.locator('.where-builder__no-filters')).toBeVisible()
 
     // Verify the Columns field is visible and has 4 selected pills (same as default columns in list view)
     const columnsField = editModal.locator('.query-preset-columns-field')
@@ -194,7 +193,7 @@ describe('Query Presets', () => {
 
     await openDeletePreset({ page })
 
-    await page.locator('[id="delete-preset-confirmation"] #confirm-action').click()
+    await page.locator('[id="delete-preset-confirmation"] [data-dialog-action="confirm"]').click()
 
     // columns can either be omitted or an empty string after being cleared
     const regex = /columns=(?:\[\]|$)/
@@ -335,7 +334,7 @@ describe('Query Presets', () => {
     await expect(idColumnHeader).toBeHidden()
 
     // Verify the modified indicator is hidden
-    await expect(page.locator('.query-preset-bar__modified-indicator')).toBeHidden()
+    await expect(page.locator('.icon--filter__badge')).toBeHidden()
 
     // Verify the reset/save options are hidden (no longer modified)
     await checkPresetModifiedOptions({ page, expectReset: false, expectSave: false })
@@ -347,23 +346,23 @@ describe('Query Presets', () => {
     await navigateToListView({ page, url: pagesUrl.list })
 
     // No modified indicator when no preset selected
-    await expect(page.locator('.query-preset-bar__modified-indicator')).toBeHidden()
+    await expect(page.locator('.icon--filter__badge')).toBeHidden()
 
     await selectPreset({ page, presetTitle: seededData.everyone.title })
 
     // No modified indicator after selecting preset
-    await expect(page.locator('.query-preset-bar__modified-indicator')).toBeHidden()
+    await expect(page.locator('.icon--filter__badge')).toBeHidden()
 
     await toggleColumn(page, { columnLabel: 'ID' })
 
     // Modified indicator visible after change
-    await expect(page.locator('.query-preset-bar__modified-indicator')).toBeVisible()
+    await expect(page.locator('.icon--filter__badge')).toBeVisible()
 
     // Reset changes
     await resetPresetChanges({ page })
 
     // Modified indicator hidden after reset
-    await expect(page.locator('.query-preset-bar__modified-indicator')).toBeHidden()
+    await expect(page.locator('.icon--filter__badge')).toBeHidden()
   })
 
   test('can edit a preset through the document drawer', async ({ page }) => {
@@ -498,11 +497,8 @@ describe('Query Presets', () => {
     await openListFilters(page, {})
 
     const whereBuilder = page.locator('.where-builder')
-    const addFirst = whereBuilder.locator('.where-builder__add-first-filter')
 
-    await addFirst.click()
-
-    const condition = whereBuilder.locator('.where-builder__or-filters > li').first()
+    const condition = whereBuilder.locator('.condition').first()
 
     // Select field
     await condition.locator('.condition__field .rs__control').click()
@@ -611,7 +607,7 @@ describe('Query Presets', () => {
 
     await expect(page).toHaveURL(/groupBy=text/)
 
-    await expect(page.locator('.group-by-header').first()).toBeVisible()
+    await expect(page.locator('.table-section__header').first()).toBeVisible()
   })
 
   test('should clear groupBy when deselecting a preset', async ({ page }) => {
@@ -632,13 +628,13 @@ describe('Query Presets', () => {
 
     // Verify groupBy is in URL and grouped view is active
     await expect(page).toHaveURL(/groupBy=text/)
-    await expect(page.locator('.group-by-header').first()).toBeVisible()
+    await expect(page.locator('.table-section__header').first()).toBeVisible()
 
     await clearSelectedPreset({ page })
 
     // Verify groupBy is removed from URL and grouped view is gone
     await expect(page).not.toHaveURL(/groupBy=/)
-    await expect(page.locator('.group-by-header')).toHaveCount(0)
+    await expect(page.locator('.table-section__header')).toHaveCount(0)
   })
 
   test('should update groupBy when saving changes to an active preset', async ({ page }) => {
@@ -663,7 +659,7 @@ describe('Query Presets', () => {
     await savePresetChanges({ page })
 
     // Wait for the modified indicator to disappear (indicates save completed)
-    await expect(page.locator('.query-preset-bar__modified-indicator')).toBeHidden()
+    await expect(page.locator('.icon--filter__badge')).toBeHidden()
 
     // Clear and reselect the preset to verify groupBy was saved
     await clearSelectedPreset({ page })
@@ -672,7 +668,7 @@ describe('Query Presets', () => {
 
     // Verify groupBy is applied from the preset
     await expect(page).toHaveURL(/groupBy=text/)
-    await expect(page.locator('.group-by-header').first()).toBeVisible()
+    await expect(page.locator('.table-section__header').first()).toBeVisible()
   })
 
   test('create preset with title, columns (Text + ID) and groupBy Text, then verify list view', async ({
@@ -717,7 +713,7 @@ describe('Query Presets', () => {
     await expect(page).toHaveURL(/preset=/)
     await expect(page).toHaveURL(/groupBy=text/)
     await expect(page.locator('#select-preset', { hasText: exactText(presetTitle) })).toBeVisible()
-    await expect(page.locator('.group-by-header').first()).toBeVisible()
+    await expect(page.locator('.table-section__header').first()).toBeVisible()
     await expect(
       page.locator('.collection-list .table th', { hasText: exactText('Text') }).first(),
     ).toBeVisible()
@@ -766,7 +762,7 @@ describe('Query Presets', () => {
 
     // Verify groupBy is in URL and grouped view is visible
     await expect(page).toHaveURL(/groupBy=text/)
-    await expect(page.locator('.group-by-header').first()).toBeVisible()
+    await expect(page.locator('.table-section__header').first()).toBeVisible()
 
     // Verify reset/save buttons are not visible initially (no modifications)
     await checkPresetModifiedOptions({ page, expectReset: false, expectSave: false })
@@ -774,7 +770,7 @@ describe('Query Presets', () => {
     // Clear the groupBy (modify the preset)
     await clearGroupBy(page)
     await expect(page).not.toHaveURL(/groupBy=/)
-    await expect(page.locator('.group-by-header')).toHaveCount(0)
+    await expect(page.locator('.table-section__header')).toHaveCount(0)
 
     // Verify reset button becomes visible after modification
     await checkPresetModifiedOptions({ page, expectReset: true, expectSave: true })
@@ -784,7 +780,7 @@ describe('Query Presets', () => {
 
     // Verify groupBy is restored from preset
     await expect(page).toHaveURL(/groupBy=text/)
-    await expect(page.locator('.group-by-header').first()).toBeVisible()
+    await expect(page.locator('.table-section__header').first()).toBeVisible()
 
     // Verify reset button is hidden again after reset
     await checkPresetModifiedOptions({ page, expectReset: false, expectSave: false })
