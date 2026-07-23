@@ -24,9 +24,8 @@ export { migrateReset } from './migrateReset.js'
 export { migrateStatus } from './migrateStatus.js'
 export { buildQuery } from './queries/buildQuery.js'
 export { operatorMap } from './queries/operatorMap.js'
-export type { DrizzleResolvedOperator, Operators } from './queries/operatorMap.js'
+export type { Operators } from './queries/operatorMap.js'
 export { parseParams } from './queries/parseParams.js'
-export { validateOperatorHandlers } from './queries/validateOperatorHandlers.js'
 export { queryDrafts } from './queryDrafts.js'
 export { buildDrizzleRelations } from './schema/buildDrizzleRelations.js'
 export { buildRawSchema } from './schema/buildRawSchema.js'
@@ -43,11 +42,6 @@ export type {
   CreateJSONQueryArgs,
   DeleteWhere,
   DrizzleAdapter,
-  DrizzleOperandTransformHandler,
-  DrizzleOperatorHandler,
-  DrizzleOperatorHandlerContext,
-  DrizzleOperatorReplacementHandler,
-  DrizzleQueryConfig,
   DrizzleTransaction,
   DropDatabase,
   EnumRawColumn,
@@ -96,6 +90,10 @@ export { createSchemaGenerator } from './utilities/createSchemaGenerator.js'
 export { executeSchemaHooks } from './utilities/executeSchemaHooks.js'
 export { extendDrizzleTable } from './utilities/extendDrizzleTable.js'
 export { hasLocalesTable } from './utilities/hasLocalesTable.js'
+export {
+  buildDynamicPredefinedJobsProcessingLeaseMigration,
+  migrateJobsProcessingLease,
+} from './utilities/jobsProcessingLeaseMigration.js'
 export { pushDevSchema } from './utilities/pushDevSchema.js'
 export { validateExistingBlockIsIdentical } from './utilities/validateExistingBlockIsIdentical.js'
 import { findMigrationDir as payloadFindMigrationDir } from 'payload'
