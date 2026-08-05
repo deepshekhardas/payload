@@ -43,12 +43,20 @@ const extractionMethods: Record<string, ExtractionMethod> = {
     // No Origin with csrf configured — fall back to Sec-Fetch-Site
     const secFetchSite = headers.get('Sec-Fetch-Site')
 
-    // Allow same-origin, same-site, and direct navigations (none)
-    if (secFetchSite === 'same-origin' || secFetchSite === 'same-site' || secFetchSite === 'none') {
+    // Allow same-origin, same-site, and direct navigations (none).
+    // Also allow a missing header: browsers omit Sec-Fetch-* on plain HTTP
+    // (non-trustworthy) origins, e.g. a same-origin navigation over http://,
+    // which also omits Origin — so there is no cross-site evidence to reject.
+    if (
+      !secFetchSite ||
+      secFetchSite === 'same-origin' ||
+      secFetchSite === 'same-site' ||
+      secFetchSite === 'none'
+    ) {
       return cookieToken
     }
 
-    // Reject cross-site requests and missing header (non-browser clients)
+    // Reject cross-site requests (non-browser clients with fetch metadata)
     return null
   },
   JWT: ({ headers }) => {
