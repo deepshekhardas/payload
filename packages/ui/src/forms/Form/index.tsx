@@ -460,10 +460,10 @@ export const Form: React.FC<FormProps> = (props) => {
           setProcessing(false)
           setSubmitted(true)
 
-          // When there was an error submitting a draft,
+          // When there was an error submitting a draft or publishing,
           // set the form state to unsubmitted, to not trigger visible form validation on changes after the failed submit.
           // Also keep the form as modified so the save button remains enabled for retry.
-          if (overridesFromArgs['_status'] === 'draft') {
+          if (['draft', 'published'].includes(overridesFromArgs['_status'])) {
             setModified(true)
 
             if (!validateDrafts) {
