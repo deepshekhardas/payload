@@ -5,7 +5,7 @@ const capitalizeFirstLetter = (string: string): string =>
   string.charAt(0).toUpperCase() + string.slice(1)
 
 const toWords = (inputString: string, joinWords = false): string => {
-  const notNullString = inputString || ''
+  const notNullString = String(inputString ?? '')
   const trimmedString = notNullString.trim()
   const arrayOfStrings = trimmedString.split(/[\s-]/)
 
