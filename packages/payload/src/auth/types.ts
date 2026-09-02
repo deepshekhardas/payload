@@ -171,8 +171,10 @@ export type AuthStrategyFunctionArgs = {
    * Specifies whether or not response headers can be set from this strategy.
    */
   canSetHeaders?: boolean
+  fallbackLocale?: string
   headers: Request['headers']
   isGraphQL?: boolean
+  locale?: string
   payload: Payload
   /**
    * The AuthStrategy name property from the payload config.

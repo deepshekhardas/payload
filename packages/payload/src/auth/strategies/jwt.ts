@@ -12,11 +12,15 @@ type JWTToken = {
 }
 
 async function autoLogin({
+  fallbackLocale,
   isGraphQL,
+  locale,
   payload,
   strategyName = 'local-jwt',
 }: {
+  fallbackLocale?: string
   isGraphQL: boolean
+  locale?: string
   payload: Payload
   strategyName?: string
 }): Promise<{
@@ -54,7 +58,9 @@ async function autoLogin({
     await payload.find({
       collection: collection!.config.slug,
       depth: isGraphQL ? 0 : collection!.config.auth.depth,
+      fallbackLocale,
       limit: 1,
+      locale,
       pagination: false,
       where,
     })
@@ -75,8 +81,10 @@ async function autoLogin({
  * Authentication strategy function for JWT tokens
  */
 export const JWTAuthentication: AuthStrategyFunction = async ({
+  fallbackLocale,
   headers,
   isGraphQL = false,
+  locale,
   payload,
   strategyName = 'local-jwt',
 }) => {
@@ -85,7 +93,7 @@ export const JWTAuthentication: AuthStrategyFunction = async ({
 
     if (!token) {
       if (headers.get('DisableAutologin') !== 'true') {
-        return await autoLogin({ isGraphQL, payload, strategyName })
+        return await autoLogin({ fallbackLocale, isGraphQL, locale, payload, strategyName })
       }
       return { user: null }
     }
@@ -98,6 +106,8 @@ export const JWTAuthentication: AuthStrategyFunction = async ({
       id: decodedPayload.id,
       collection: decodedPayload.collection,
       depth: isGraphQL ? 0 : collection!.config.auth.depth,
+      fallbackLocale: fallbackLocale as any,
+      locale: locale as any,
     })) as AuthStrategyResult['user']
 
     if (user && (!collection!.config.auth.verify || user._verified)) {
@@ -120,13 +130,13 @@ export const JWTAuthentication: AuthStrategyFunction = async ({
       }
     } else {
       if (headers.get('DisableAutologin') !== 'true') {
-        return await autoLogin({ isGraphQL, payload, strategyName })
+        return await autoLogin({ fallbackLocale, isGraphQL, locale, payload, strategyName })
       }
       return { user: null }
     }
   } catch (ignore) {
     if (headers.get('DisableAutologin') !== 'true') {
-      return await autoLogin({ isGraphQL, payload, strategyName })
+      return await autoLogin({ fallbackLocale, isGraphQL, locale, payload, strategyName })
     }
     return { user: null }
   }
